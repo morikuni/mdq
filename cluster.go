@@ -1,29 +1,27 @@
 package mdq
 
 import (
-	"fmt"
 	"sync"
 )
 
 type Cluster interface {
-	Query(qeury string) map[string]Result
+	Query(qeury string) []Result
 }
 
 type cluster struct {
-	dbs      map[string]DB
+	dbs      []DB
 	reporter Reporter
 }
 
-func NewCluster(dbs map[string]DB, reporter Reporter) Cluster {
+func NewCluster(dbs []DB, reporter Reporter) Cluster {
 	return cluster{dbs, reporter}
 }
 
-func (c cluster) Query(query string) map[string]Result {
-	results := make(map[string]Result)
+func (c cluster) Query(query string) []Result {
+	var results []Result
 	wg := &sync.WaitGroup{}
 	mu := &sync.Mutex{}
-	for n, d := range c.dbs {
-		name := n
+	for _, d := range c.dbs {
 		db := d
 		wg.Add(1)
 		go func() {
@@ -31,11 +29,11 @@ func (c cluster) Query(query string) map[string]Result {
 
 			result, err := db.Query(query)
 			if err != nil {
-				c.reporter.Report(fmt.Errorf("[%s] %v", name, err))
+				c.reporter.Report(err)
 				return
 			}
 			mu.Lock()
-			results[name] = result
+			results = append(results, result)
 			mu.Unlock()
 		}()
 	}

@@ -10,8 +10,9 @@ type Executor interface {
 }
 
 type Result struct {
-	Header []string
-	Rows   []map[string]interface{}
+	Database string
+	Headers  []string
+	Rows     []map[string]interface{}
 }
 
 type column struct {
@@ -30,11 +31,12 @@ type DB interface {
 	Query(query string) (Result, error)
 }
 
-func NewDB(executor Executor) DB {
-	return db{executor}
+func NewDB(name string, executor Executor) DB {
+	return db{name, executor}
 }
 
 type db struct {
+	name     string
 	executor Executor
 }
 
@@ -51,7 +53,8 @@ func (db db) Query(query string) (Result, error) {
 	columnSize := len(columns)
 
 	result := Result{
-		Header: columns,
+		Database: db.name,
+		Headers:  columns,
 	}
 	for rows.Next() {
 		values := make([]AnyValue, columnSize)
@@ -75,7 +78,7 @@ func (db db) Query(query string) (Result, error) {
 }
 
 func (db db) err(err error, message string) error {
-	return fmt.Errorf("%s: %v", message, err)
+	return fmt.Errorf("%s: %s: %v", db.name, message, err)
 }
 
 type AnyValue struct {

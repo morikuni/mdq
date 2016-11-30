@@ -51,13 +51,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	dbs := make(map[string]mdq.DB)
+	var dbs []mdq.DB
 	for _, dbc := range conf.DBs {
 		con, err := sql.Open(dbc.Driver, dbc.DSN)
 		if err != nil {
 			panic(err)
 		}
-		dbs[dbc.Name] = mdq.NewDB(con)
+		dbs = append(dbs, mdq.NewDB(dbc.Name, con))
 	}
 
 	cluster := mdq.NewCluster(dbs, reporter)
