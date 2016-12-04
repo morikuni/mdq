@@ -3,54 +3,42 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
-	"regexp"
 	"text/template"
 
 	"gopkg.in/yaml.v2"
 
+	"github.com/alecthomas/kingpin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/morikuni/mdq"
 )
 
 func main() {
-	var format string
-	var query string
-	var config string
-	var silent bool
-	var target string
-
 	home := os.Getenv("HOME")
 
-	flag.StringVar(&target, "target", "", "target")
-	flag.StringVar(&format, "f", "", "format")
-	flag.StringVar(&query, "q", "", "query")
-	flag.StringVar(&config, "c", home+"/.config/mdq/config.yaml", "config")
-	flag.BoolVar(&silent, "s", false, "print error")
-	flag.Parse()
+	targetReg := kingpin.Flag("target", "reqular expression to filter target databases").Regexp()
+	format := kingpin.Flag("format", "output format").Short('f').String()
+	query := kingpin.Flag("query", "SQL").Short('q').String()
+	config := kingpin.Flag("config", "path to config file").Short('c').Default(home + "/.config/mdq/config.yaml").String()
+	silent := kingpin.Flag("silent", "ignore errors from databases").Short('s').Default("false").Bool()
+	kingpin.Parse()
 
-	if query == "" {
+	if *query == "" {
 		panic("query is empty")
 	}
 
-	if config == "" {
+	if *config == "" {
 		panic("config is empty")
 	}
 
-	targetReg, err := regexp.Compile(target)
-	if err != nil {
-		panic(err)
-	}
-
 	reporter := mdq.DefaultReporter
-	if silent {
+	if *silent {
 		reporter = mdq.SilentReporter
 	}
 
-	bs, err := ioutil.ReadFile(config)
+	bs, err := ioutil.ReadFile(*config)
 	if err != nil {
 		panic(err)
 	}
@@ -61,7 +49,7 @@ func main() {
 	}
 	var dbs []mdq.DB
 	for _, dbc := range conf.DBs {
-		if !targetReg.MatchString(dbc.Name) {
+		if *targetReg != nil && !(*targetReg).MatchString(dbc.Name) {
 			continue
 		}
 		con, err := sql.Open(dbc.Driver, dbc.DSN)
@@ -73,11 +61,11 @@ func main() {
 
 	cluster := mdq.NewCluster(dbs, reporter)
 
-	results := cluster.Query(query)
+	results := cluster.Query(*query)
 
-	if format != "" {
+	if *format != "" {
 		t := template.New("sql")
-		t, err = t.Parse(format)
+		t, err = t.Parse(*format)
 		if err != nil {
 			panic(err)
 		}
