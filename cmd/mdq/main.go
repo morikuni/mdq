@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"text/template"
 
 	"gopkg.in/yaml.v2"
@@ -20,9 +21,11 @@ func main() {
 	var query string
 	var config string
 	var silent bool
+	var target string
 
 	home := os.Getenv("HOME")
 
+	flag.StringVar(&target, "target", "", "target")
 	flag.StringVar(&format, "f", "", "format")
 	flag.StringVar(&query, "q", "", "query")
 	flag.StringVar(&config, "c", home+"/.config/mdq/config.yaml", "config")
@@ -35,6 +38,11 @@ func main() {
 
 	if config == "" {
 		panic("config is empty")
+	}
+
+	targetReg, err := regexp.Compile(target)
+	if err != nil {
+		panic(err)
 	}
 
 	reporter := mdq.DefaultReporter
@@ -53,6 +61,9 @@ func main() {
 	}
 	var dbs []mdq.DB
 	for _, dbc := range conf.DBs {
+		if !targetReg.MatchString(dbc.Name) {
+			continue
+		}
 		con, err := sql.Open(dbc.Driver, dbc.DSN)
 		if err != nil {
 			panic(err)
