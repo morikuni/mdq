@@ -79,8 +79,3 @@ func main() {
 	}
 	fmt.Println(string(json))
 }
-
-type Result struct {
-	Headers []string
-	Rows    []map[string]interface{}
-}
