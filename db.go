@@ -11,7 +11,7 @@ type Executor interface {
 
 type Result struct {
 	Database string
-	Headers  []string
+	Columns  []string
 	Rows     []map[string]interface{}
 }
 
@@ -54,7 +54,7 @@ func (db db) Query(query string) (Result, error) {
 
 	result := Result{
 		Database: db.name,
-		Headers:  columns,
+		Columns:  columns,
 	}
 	for rows.Next() {
 		values := make([]AnyValue, columnSize)
