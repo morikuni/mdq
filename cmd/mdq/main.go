@@ -4,11 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"text/template"
-
-	"gopkg.in/yaml.v2"
 
 	"github.com/alecthomas/kingpin"
 	_ "github.com/go-sql-driver/mysql"
@@ -38,15 +35,11 @@ func main() {
 		reporter = mdq.SilentReporter
 	}
 
-	bs, err := ioutil.ReadFile(*config)
+	conf, err := mdq.ParseFile(*config)
 	if err != nil {
 		panic(err)
 	}
-	var conf mdq.Config
-	err = yaml.Unmarshal(bs, &conf)
-	if err != nil {
-		panic(err)
-	}
+
 	var dbs []mdq.DB
 	for _, dbc := range conf.DBs {
 		if *targetReg != nil && !(*targetReg).MatchString(dbc.Name) {
