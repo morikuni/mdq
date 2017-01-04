@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"os"
 
 	"github.com/alecthomas/kingpin"
@@ -32,21 +31,9 @@ func main() {
 		reporter = mdq.SilentReporter
 	}
 
-	conf, err := mdq.ParseFile(*config)
+	dbs, err := mdq.CreateDBsFromFile(*config, *targetReg)
 	if err != nil {
 		panic(err)
-	}
-
-	var dbs []mdq.DB
-	for _, dbc := range conf.DBs {
-		if *targetReg != nil && !(*targetReg).MatchString(dbc.Name) {
-			continue
-		}
-		con, err := sql.Open(dbc.Driver, dbc.DSN)
-		if err != nil {
-			panic(err)
-		}
-		dbs = append(dbs, mdq.NewDB(dbc.Name, con))
 	}
 
 	cluster := mdq.NewCluster(dbs, reporter)
