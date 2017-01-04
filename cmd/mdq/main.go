@@ -2,10 +2,7 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
-	"fmt"
 	"os"
-	"text/template"
 
 	"github.com/alecthomas/kingpin"
 	_ "github.com/go-sql-driver/mysql"
@@ -56,19 +53,14 @@ func main() {
 
 	results := cluster.Query(*query)
 
+	var printer mdq.Printer
 	if *format != "" {
-		t := template.New("sql")
-		t, err = t.Parse(*format)
+		printer, err = mdq.NewTemplatePrinter(*format)
 		if err != nil {
 			panic(err)
 		}
-		t.Execute(os.Stdout, results)
-		return
+	} else {
+		printer = mdq.NewJsonPrinter()
 	}
-
-	json, err := json.Marshal(results)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(string(json))
+	printer.Print(os.Stdout, results)
 }
