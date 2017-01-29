@@ -19,8 +19,8 @@ func NewCluster(dbs []DB, reporter Reporter) Cluster {
 
 func (c cluster) Query(query string) []Result {
 	var results []Result
-	wg := &sync.WaitGroup{}
-	mu := &sync.Mutex{}
+	var wg sync.WaitGroup
+	var mu sync.Mutex
 	for _, d := range c.dbs {
 		db := d
 		wg.Add(1)
