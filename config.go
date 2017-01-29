@@ -2,6 +2,7 @@ package mdq
 
 import (
 	"database/sql"
+	"io"
 	"io/ioutil"
 	"regexp"
 
@@ -18,8 +19,8 @@ type DBConfig struct {
 	DSN    string `yaml:"dsn"`
 }
 
-func CreateDBsFromFile(path string, filter *regexp.Regexp) ([]DB, error) {
-	conf, err := ParseFile(path)
+func CreateDBsFromFile(r io.Reader, filter *regexp.Regexp) ([]DB, error) {
+	conf, err := ParseFile(r)
 	if err != nil {
 		return nil, err
 	}
@@ -39,8 +40,8 @@ func CreateDBsFromFile(path string, filter *regexp.Regexp) ([]DB, error) {
 	return dbs, nil
 }
 
-func ParseFile(path string) (Config, error) {
-	bs, err := ioutil.ReadFile(path)
+func ParseFile(r io.Reader) (Config, error) {
+	bs, err := ioutil.ReadAll(r)
 	if err != nil {
 		return Config{}, err
 	}

@@ -31,7 +31,13 @@ func main() {
 		reporter = mdq.SilentReporter
 	}
 
-	dbs, err := mdq.CreateDBsFromFile(*config, *targetReg)
+	f, err := os.Open(*config)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	dbs, err := mdq.CreateDBsFromFile(f, *targetReg)
 	if err != nil {
 		panic(err)
 	}
