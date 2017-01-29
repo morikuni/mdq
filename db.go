@@ -31,8 +31,12 @@ type DB interface {
 	Query(query string) (Result, error)
 }
 
-func NewDB(name string, executor Executor) DB {
-	return db{name, executor}
+func NewDB(name, driver, dsn string) (DB, error) {
+	con, err := sql.Open(driver, dsn)
+	if err != nil {
+		return nil, err
+	}
+	return db{name, con}, nil
 }
 
 type db struct {

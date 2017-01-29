@@ -1,7 +1,6 @@
 package mdq
 
 import (
-	"database/sql"
 	"io"
 	"io/ioutil"
 
@@ -37,11 +36,11 @@ func CreateDBsFromConfig(r io.Reader, tag string) ([]DB, error) {
 				}
 			}
 		}
-		con, err := sql.Open(dbc.Driver, dbc.DSN)
+		db, err := NewDB(dbc.Name, dbc.Driver, dbc.DSN)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
-		dbs = append(dbs, NewDB(dbc.Name, con))
+		dbs = append(dbs, db)
 	}
 
 	return dbs, nil
