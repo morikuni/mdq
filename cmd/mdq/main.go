@@ -2,22 +2,25 @@ package main
 
 import (
 	"os"
+	"regexp"
 
-	"github.com/alecthomas/kingpin"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/morikuni/mdq"
+	"github.com/spf13/pflag"
 )
 
 func main() {
 	home := os.Getenv("HOME")
 
-	targetReg := kingpin.Flag("target", "reqular expression to filter target databases").Regexp()
-	format := kingpin.Flag("format", "output format").Short('f').String()
-	query := kingpin.Flag("query", "SQL").Short('q').String()
-	config := kingpin.Flag("config", "path to config file").Short('c').Default(home + "/.config/mdq/config.yaml").String()
-	silent := kingpin.Flag("silent", "ignore errors from databases").Short('s').Default("false").Bool()
-	kingpin.Parse()
+	flag := pflag.NewFlagSet("mdq", pflag.ContinueOnError)
+	target := flag.String("target", "", "target filtering regular expression")
+	format := flag.String("format", "", "golang template string")
+	query := flag.StringP("query", "q", "", "SQL")
+	config := flag.String("config", home+"/.config/mdq/config.yaml", "path to config file")
+	silent := flag.Bool("silent", false, "ignore errors from databases")
+
+	flag.Parse(os.Args[1:])
 
 	if *query == "" {
 		panic("query is empty")
@@ -38,7 +41,14 @@ func main() {
 	}
 	defer f.Close()
 
-	dbs, err := mdq.CreateDBsFromFile(f, *targetReg)
+	var targetReg *regexp.Regexp
+	if *target != "" {
+		targetReg, err = regexp.Compile(*target)
+		if err != nil {
+			panic(err)
+		}
+	}
+	dbs, err := mdq.CreateDBsFromFile(f, targetReg)
 	if err != nil {
 		panic(err)
 	}
