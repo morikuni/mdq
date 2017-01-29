@@ -48,7 +48,7 @@ func main() {
 			panic(err)
 		}
 	}
-	dbs, err := mdq.CreateDBsFromFile(f, targetReg)
+	dbs, err := mdq.CreateDBsFromConfig(f, targetReg)
 	if err != nil {
 		panic(err)
 	}

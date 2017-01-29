@@ -19,8 +19,8 @@ type DBConfig struct {
 	DSN    string `yaml:"dsn"`
 }
 
-func CreateDBsFromFile(r io.Reader, filter *regexp.Regexp) ([]DB, error) {
-	conf, err := ParseFile(r)
+func CreateDBsFromConfig(r io.Reader, filter *regexp.Regexp) ([]DB, error) {
+	conf, err := ParseConfig(r)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func CreateDBsFromFile(r io.Reader, filter *regexp.Regexp) ([]DB, error) {
 	return dbs, nil
 }
 
-func ParseFile(r io.Reader) (Config, error) {
+func ParseConfig(r io.Reader) (Config, error) {
 	bs, err := ioutil.ReadAll(r)
 	if err != nil {
 		return Config{}, err
