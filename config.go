@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"io"
 	"io/ioutil"
-	"regexp"
 
 	"gopkg.in/yaml.v2"
 )
@@ -14,12 +13,13 @@ type Config struct {
 }
 
 type DBConfig struct {
-	Name   string `yaml:"name"`
-	Driver string `yaml:"driver"`
-	DSN    string `yaml:"dsn"`
+	Name   string   `yaml:"name"`
+	Driver string   `yaml:"driver"`
+	DSN    string   `yaml:"dsn"`
+	Tags   []string `yaml:"tags,flow"`
 }
 
-func CreateDBsFromConfig(r io.Reader, filter *regexp.Regexp) ([]DB, error) {
+func CreateDBsFromConfig(r io.Reader, tag string) ([]DB, error) {
 	conf, err := ParseConfig(r)
 	if err != nil {
 		return nil, err
@@ -27,8 +27,15 @@ func CreateDBsFromConfig(r io.Reader, filter *regexp.Regexp) ([]DB, error) {
 
 	var dbs []DB
 	for _, dbc := range conf.DBs {
-		if filter != nil && !filter.MatchString(dbc.Name) {
-			continue
+		if tag != "" {
+			if len(dbc.Tags) == 0 {
+				continue
+			}
+			for _, t := range dbc.Tags {
+				if tag != t {
+					continue
+				}
+			}
 		}
 		con, err := sql.Open(dbc.Driver, dbc.DSN)
 		if err != nil {

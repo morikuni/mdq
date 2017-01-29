@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"regexp"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
@@ -14,7 +13,7 @@ func main() {
 	home := os.Getenv("HOME")
 
 	flag := pflag.NewFlagSet("mdq", pflag.ContinueOnError)
-	target := flag.String("target", "", "target filtering regular expression")
+	tag := flag.String("tag", "", "database tag")
 	format := flag.String("format", "", "golang template string")
 	query := flag.StringP("query", "q", "", "SQL")
 	config := flag.String("config", home+"/.config/mdq/config.yaml", "path to config file")
@@ -41,14 +40,7 @@ func main() {
 	}
 	defer f.Close()
 
-	var targetReg *regexp.Regexp
-	if *target != "" {
-		targetReg, err = regexp.Compile(*target)
-		if err != nil {
-			panic(err)
-		}
-	}
-	dbs, err := mdq.CreateDBsFromConfig(f, targetReg)
+	dbs, err := mdq.CreateDBsFromConfig(f, *tag)
 	if err != nil {
 		panic(err)
 	}
