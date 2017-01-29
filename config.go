@@ -26,17 +26,20 @@ func CreateDBsFromConfig(r io.Reader, tag string) ([]DB, error) {
 
 	var dbs []DB
 	for _, dbc := range conf.DBs {
-		if tag != "" {
-			if len(dbc.Tags) == 0 {
-				continue
-			}
+		ok := false
+		if tag == "" {
+			ok = true
+		} else {
 			for _, t := range dbc.Tags {
-				if tag != t {
-					continue
+				if tag == t {
+					ok = true
 				}
 			}
 		}
-		db, err := NewDB(dbc.Name, dbc.Driver, dbc.DSN)
+		if !ok {
+			continue
+		}
+		db, err := cp.NewDB(dbc.Name, dbc.Driver, dbc.DSN)
 		if err != nil {
 			return nil, err
 		}
