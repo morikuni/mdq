@@ -7,6 +7,10 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var (
+	DefaultConfigParser = ConfigParser{NewDB}
+)
+
 type Config struct {
 	DBs []DBConfig `yaml:"dbs"`
 }
@@ -19,6 +23,14 @@ type DBConfig struct {
 }
 
 func CreateDBsFromConfig(r io.Reader, tag string) ([]DB, error) {
+	return DefaultConfigParser.CreateDBsFromConfig(r, tag)
+}
+
+type ConfigParser struct {
+	NewDB func(name, driver, dsn string) (DB, error)
+}
+
+func (cp ConfigParser) CreateDBsFromConfig(r io.Reader, tag string) ([]DB, error) {
 	conf, err := ParseConfig(r)
 	if err != nil {
 		return nil, err
