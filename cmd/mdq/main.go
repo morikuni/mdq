@@ -48,12 +48,12 @@ func main() {
 
 	var printer mdq.Printer
 	if *format != "" {
-		printer, err = mdq.NewTemplatePrinter(*format)
+		printer, err = mdq.NewTemplatePrinter(os.Stdout, *format)
 		if err != nil {
 			panic(err)
 		}
 	} else {
-		printer = mdq.NewJsonPrinter()
+		printer = mdq.NewJsonPrinter(os.Stdout)
 	}
-	printer.Print(os.Stdout, results)
+	printer.Print(results)
 }
