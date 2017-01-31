@@ -15,18 +15,6 @@ type Result struct {
 	Rows     []map[string]interface{}
 }
 
-type column struct {
-	value interface{}
-}
-
-func (c *column) Scan(src interface{}) error {
-	c.value = src
-	if bs, ok := src.([]byte); ok {
-		c.value = string(bs)
-	}
-	return nil
-}
-
 type DB interface {
 	Query(query string) (Result, error)
 }
