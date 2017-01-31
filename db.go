@@ -49,6 +49,7 @@ func (db db) Query(query string) (Result, error) {
 	if err != nil {
 		return Result{}, db.err(err, "execution failed")
 	}
+	defer rows.Close()
 
 	columns, err := rows.Columns()
 	if err != nil {
