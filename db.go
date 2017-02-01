@@ -62,7 +62,7 @@ func (db db) Query(query string) (Result, error) {
 
 		row := make(map[string]interface{})
 		for i, col := range columns {
-			v := values[i].val
+			v := values[i].Value
 			row[col] = v
 		}
 		result.Rows = append(result.Rows, row)
@@ -75,13 +75,13 @@ func (db db) err(err error, message string) error {
 }
 
 type AnyValue struct {
-	val interface{}
+	Value interface{}
 }
 
 func (v *AnyValue) Scan(src interface{}) error {
-	v.val = src
+	v.Value = src
 	if bs, ok := src.([]byte); ok {
-		v.val = string(bs)
+		v.Value = string(bs)
 	}
 	return nil
 }
