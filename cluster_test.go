@@ -152,6 +152,7 @@ func TestCluster(t *testing.T) {
 
 			r := cluster.Query("query")
 
+			// Use ToMap to fix slice order problem
 			assert.Equal(ToMap(test.Output.Results), ToMap(r))
 			assert.Equal(test.Output.ReportedErr, reporter.Err)
 		})
