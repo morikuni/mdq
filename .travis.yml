@@ -9,3 +9,17 @@ install:
   - glide install
 
 script: go test -v $(glide nv)
+
+before_deploy:
+  - go get github.com/mitchellh/gox
+  - gox -output "release/{{.OS}}_{{.Arch}}_${TRAVIS_TAG}/{{.Dir}}" -ldflags "-X main.Version=${TRAVIS_TAG}" ./cmd/mdq/
+  - cd release
+  - for file in $(find ./*/* -type f); do zip $(basename $(dirname $file)).zip $file; done
+
+deploy:
+  provider: releases
+  api_key: $GITHUB_TOKEN
+  file_glob: true
+  file: release/*.zip
+  on:
+    tags: true
