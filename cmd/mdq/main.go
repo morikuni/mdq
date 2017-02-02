@@ -24,11 +24,34 @@ func Run(args []string, in io.Reader, out io.Writer, errW io.Writer) int {
 	query := flag.StringP("query", "q", "", "SQL")
 	config := flag.String("config", home+"/.config/mdq/config.yaml", "path to config file")
 	silent := flag.Bool("silent", false, "ignore errors from databases")
+	help := flag.BoolP("help", "h", false, "print this help.")
+	version := flag.Bool("version", false, "print version of mdq")
 
-	flag.Parse(args[1:])
+	flag.Usage = func() {
+		fmt.Fprintln(errW)
+		fmt.Fprintln(errW, "Usage: mdq [flags]")
+		fmt.Fprintln(errW)
+		fmt.Fprintln(errW, flag.FlagUsages())
+	}
+
+	err := flag.Parse(args[1:])
+	if err != nil {
+		fmt.Fprintln(errW, err)
+		return 1
+	}
+
+	if *help {
+		flag.Usage()
+		return 0
+	}
+
+	if *version {
+		fmt.Fprintln(out, "mdq version", "0.0.0")
+		return 0
+	}
 
 	if *query == "" {
-		fmt.Fprintln(errW, "query is required")
+		fmt.Fprintln(errW, "--query is required")
 		return 1
 	}
 
