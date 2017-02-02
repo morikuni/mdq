@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"os"
 
@@ -24,14 +25,11 @@ func Run(args []string, in io.Reader, out io.Writer, errW io.Writer) int {
 	config := flag.String("config", home+"/.config/mdq/config.yaml", "path to config file")
 	silent := flag.Bool("silent", false, "ignore errors from databases")
 
-	flag.Parse(os.Args[1:])
+	flag.Parse(args[1:])
 
 	if *query == "" {
-		panic("query is empty")
-	}
-
-	if *config == "" {
-		panic("config is empty")
+		fmt.Fprintln(errW, "query is required")
+		return 1
 	}
 
 	reporter := mdq.DefaultReporter
@@ -41,13 +39,15 @@ func Run(args []string, in io.Reader, out io.Writer, errW io.Writer) int {
 
 	f, err := os.Open(*config)
 	if err != nil {
-		panic(err)
+		fmt.Fprintln(errW, "cannot open config file:", *config)
+		return 1
 	}
 	defer f.Close()
 
 	dbs, err := mdq.CreateDBsFromConfig(f, *tag)
 	if err != nil {
-		panic(err)
+		fmt.Fprintln(errW, err)
+		return 1
 	}
 
 	cluster := mdq.NewCluster(dbs, reporter)
@@ -58,7 +58,8 @@ func Run(args []string, in io.Reader, out io.Writer, errW io.Writer) int {
 	if *format != "" {
 		printer, err = mdq.NewTemplatePrinter(os.Stdout, *format)
 		if err != nil {
-			panic(err)
+			fmt.Fprintln(errW, err)
+			return 1
 		}
 	} else {
 		printer = mdq.NewJsonPrinter(os.Stdout)
