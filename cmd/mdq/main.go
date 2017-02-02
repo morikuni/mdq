@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -51,8 +52,12 @@ func Run(args []string, in io.Reader, out io.Writer, errW io.Writer) int {
 	}
 
 	if *query == "" {
-		fmt.Fprintln(errW, "--query is required")
-		return 1
+		bs, err := ioutil.ReadAll(in)
+		*query = string(bs)
+		if err != nil {
+			fmt.Fprintln(errW, *config)
+			return 1
+		}
 	}
 
 	reporter := mdq.DefaultReporter
