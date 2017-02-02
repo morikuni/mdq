@@ -12,6 +12,10 @@ import (
 	"github.com/spf13/pflag"
 )
 
+var (
+	Version string = "unknown"
+)
+
 func main() {
 	os.Exit(Run(os.Args, os.Stdin, os.Stdout, os.Stderr))
 }
@@ -47,7 +51,7 @@ func Run(args []string, in io.Reader, out io.Writer, errW io.Writer) int {
 	}
 
 	if *version {
-		fmt.Fprintln(out, "mdq version", "0.0.0")
+		fmt.Fprintln(out, "mdq version", Version)
 		return 0
 	}
 
