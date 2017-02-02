@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -10,6 +11,10 @@ import (
 )
 
 func main() {
+	os.Exit(Run(os.Args, os.Stdin, os.Stdout, os.Stderr))
+}
+
+func Run(args []string, in io.Reader, out io.Writer, errW io.Writer) int {
 	home := os.Getenv("HOME")
 
 	flag := pflag.NewFlagSet("mdq", pflag.ContinueOnError)
@@ -59,4 +64,6 @@ func main() {
 		printer = mdq.NewJsonPrinter(os.Stdout)
 	}
 	printer.Print(results)
+
+	return 0
 }
