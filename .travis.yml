@@ -12,7 +12,7 @@ script: go test -v $(glide nv)
 
 before_deploy:
   - go get github.com/mitchellh/gox
-  - gox -output "release/{{.OS}}_{{.Arch}}_${TRAVIS_TAG}/{{.Dir}}" -os "darwin linux windows" -arch "amd64 386" -ldflags "-X main.Version=${TRAVIS_TAG}" ./cmd/mdq/
+  - gox -output "release/{{.Dir}}-${TRAVIS_TAG}-{{.OS}}-{{.Arch}}/{{.Dir}}" -os "darwin linux windows" -arch "amd64 386" -ldflags "-X main.Version=${TRAVIS_TAG}" ./cmd/mdq/
   - cd release
   - for file in $(find ./*/* -type f); do zip $(basename $(dirname $file)).zip $file; done
 
