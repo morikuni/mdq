@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -26,7 +27,6 @@ func Run(args []string, in io.Reader, out io.Writer, errW io.Writer) int {
 	flag := pflag.NewFlagSet("mdq", pflag.ContinueOnError)
 	tag := flag.String("tag", "", "database tag")
 	format := flag.String("format", "", "golang template string")
-	query := flag.StringP("query", "q", "", "SQL")
 	config := flag.String("config", home+"/.config/mdq/config.yaml", "path to config file")
 	silent := flag.Bool("silent", false, "ignore errors from databases")
 	help := flag.BoolP("help", "h", false, "print this help.")
@@ -34,7 +34,7 @@ func Run(args []string, in io.Reader, out io.Writer, errW io.Writer) int {
 
 	flag.Usage = func() {
 		fmt.Fprintln(errW)
-		fmt.Fprintln(errW, "Usage: mdq [flags]")
+		fmt.Fprintln(errW, "Usage: mdq [flags] <query>")
 		fmt.Fprintln(errW)
 		fmt.Fprintln(errW, flag.FlagUsages())
 	}
@@ -55,13 +55,14 @@ func Run(args []string, in io.Reader, out io.Writer, errW io.Writer) int {
 		return 0
 	}
 
-	if *query == "" {
+	query := strings.Join(flag.Args(), " ")
+	if query == "" {
 		bs, err := ioutil.ReadAll(in)
-		*query = string(bs)
 		if err != nil {
 			fmt.Fprintln(errW, *config)
 			return 1
 		}
+		query = string(bs)
 	}
 
 	reporter := mdq.DefaultReporter
@@ -84,7 +85,7 @@ func Run(args []string, in io.Reader, out io.Writer, errW io.Writer) int {
 
 	cluster := mdq.NewCluster(dbs, reporter)
 
-	results := cluster.Query(*query)
+	results := cluster.Query(query)
 
 	var printer mdq.Printer
 	if *format != "" {
