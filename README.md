@@ -24,7 +24,7 @@ dbs:
     tags: ["example_tag"]
 
 
-$ mdq -q "select * from hello" --tag example_tag | jq .
+$ mdq --tag example_tag "select * from hello" | jq .
 [
   {
     "Database": "example_db",
