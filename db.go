@@ -67,6 +67,11 @@ func (db db) Query(query string) (Result, error) {
 		}
 		result.Rows = append(result.Rows, row)
 	}
+	err = rows.Err()
+	if err != nil {
+		return Result{}, db.err(err, "error in interating rows")
+	}
+
 	return result, nil
 }
 
