@@ -5,7 +5,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -55,8 +54,15 @@ func Run(args []string, in io.Reader, out io.Writer, errW io.Writer) int {
 		return 0
 	}
 
-	query := strings.Join(flag.Args(), " ")
-	if query == "" {
+	as := flag.Args()
+	if len(as) > 1 {
+		fmt.Fprintln(errW, "too many args")
+		return 1
+	}
+	var query string
+	if len(as) == 1 {
+		query = as[0]
+	} else {
 		bs, err := ioutil.ReadAll(in)
 		if err != nil {
 			fmt.Fprintln(errW, *config)
