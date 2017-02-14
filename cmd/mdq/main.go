@@ -33,7 +33,7 @@ func Run(args []string, in io.Reader, out io.Writer, errW io.Writer) int {
 
 	flag.Usage = func() {
 		fmt.Fprintln(errW)
-		fmt.Fprintln(errW, "Usage: mdq [flags] <query>")
+		fmt.Fprintln(errW, "Usage: mdq [flags] [<tag>] <query>")
 		fmt.Fprintln(errW)
 		fmt.Fprintln(errW, flag.FlagUsages())
 	}
@@ -55,14 +55,18 @@ func Run(args []string, in io.Reader, out io.Writer, errW io.Writer) int {
 	}
 
 	as := flag.Args()
-	if len(as) > 1 {
+	if len(as) > 2 {
 		fmt.Fprintln(errW, "too many args")
 		return 1
 	}
 	var query string
-	if len(as) == 1 {
+	switch len(as) {
+	case 1:
 		query = as[0]
-	} else {
+	case 2:
+		*tag = as[0]
+		query = as[1]
+	default:
 		bs, err := ioutil.ReadAll(in)
 		if err != nil {
 			fmt.Fprintln(errW, *config)
